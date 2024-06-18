@@ -6,6 +6,6 @@
         "use": "@vercel/python"
     }],
     "routes": [
-        { "src": "(.*)", "dest": "chat-bot.py" }
+        { "src": "(.*)", "dest": "chatbot.py" }
     ]
  }
