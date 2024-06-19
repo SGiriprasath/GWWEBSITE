@@ -16946,7 +16946,7 @@ body {
     width: 65px; /* Adjust width and height based on your image size */
     height: 65px;
     display: block;
-    background-image: url('/static/bot1.png'); /* Replace with your image path */
+    background-image: url('/static/bot.png'); /* Replace with your image path */
     background-size: cover;
     background-repeat: no-repeat;
     border-radius: 50%; /* Makes the button circular */
