@@ -1171,7 +1171,7 @@ function closePopup() {
         disableInput(true);
 
         // Show the typing indicator
-        const typingIndicator = addMessage("Typing...", "bot-message typing");
+        const typingIndicator = addMessage("...", "bot-message typing");
 
         try {
             const response = await fetch("/chat", {
