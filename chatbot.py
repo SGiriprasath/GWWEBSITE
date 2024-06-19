@@ -2,45 +2,48 @@ from flask import Flask, request, jsonify, render_template
 from langchain.llms import GooglePalm
 from langchain.document_loaders.csv_loader import CSVLoader
 from langchain.embeddings import GooglePalmEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import FAISS
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
-
-
-
+from langchain.vectorstores import FAISS
 import os
+
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 
-google = GooglePalm(google_api_key=os.getenv("GOOGLE_API_KEY"), temperature=0.0)
-embeddings_new = GooglePalmEmbeddings(google_api_key=os.getenv("GOOGLE_API_KEY"))
-file_path = "faiss_store_openai.index"
+google = GooglePalm(google_api_key=os.getenv("GOOGLE_API_KEY"), temperature=0)
+
+path = "faiss_store_openai.index"
+instructor_embeddings = GooglePalmEmbeddings()
 
 
 def create_vector_data():
-    if os.path.exists('faiss_store_openai'):
+    if os.path.exists('faiss_store_openai.index'):
         pass
     else:
         data = CSVLoader(file_path='company.csv', source_column="prompt")
         new_data = data.load()
 
-        text_splitter = RecursiveCharacterTextSplitter()
-        docs = text_splitter.split_documents(new_data)
-        # create embeddings and save it to FAISS index
-        vector_data = FAISS.from_documents(docs, embeddings_new)
-        vector_data.save_local(file_path)
+        # Create a FAISS instance for vector database from 'data' and embeddings
+        vectordb = FAISS.from_documents(documents=new_data,
+                                        embedding=instructor_embeddings)
+
+        # Save the FAISS instance locally
+        vectordb.save_local(path)
 
 
 def get_chain(query):
-    data = FAISS.load_local(file_path, embeddings=embeddings_new)
-    retriever = data.as_retriever(score_threshold=0.1)
+    # Load the FAISS instance with embeddings for consistency
+    data = FAISS.load_local(path, embeddings=instructor_embeddings)
+    retriever = data.as_retriever(score_threshold=0.7)
 
-    prompt_template = """Given the following context and a question, generate an answer based on this context only.
-    In the answer try to provide as much text as possible from "response" section in the source document context without making much changes.
-    If the answer is not found in the context, kindly give the message "I don't know." rather than making a answer this is important.
-    CONTEXT: {context}
-    QUESTION: {question}"""
+    prompt_template =  """*Instruction:* Answer the following question based on the provided context only. Use the information from the "response" section in the context whenever possible, but avoid making significant changes.
+
+*Context:* {context}
+
+*Question:* {question}
+
+*Answer:* I don't know."  # Pre-fill the answer with "I don't know"
+"""
     PROMPT = PromptTemplate(
         template=prompt_template, input_variables=["context", "question"])
     chain_type_kwargs = {"prompt": PROMPT}
@@ -50,15 +53,9 @@ def get_chain(query):
                                         input_key="query",
                                         return_source_documents=True,
                                         chain_type_kwargs=chain_type_kwargs)
-    print(chain({"query": query})["result"])
-    if len(query) == 1:
-        return "I don't know"
-    elif "I don't know" in chain({"query":query})["result"]:
-        return "I don't know"
-    elif "your response:" in chain({"query": query})["result"] or "response:" in chain({"query": query})["result"]:
-        return chain({"query": query})["result"].split("response")[-1]
-    else:
-        return chain({"query": query})["result"]
+
+    # Call the chain with the query and return the result
+    return chain(query)["result"]
 
 
 @app.route('/')
@@ -73,6 +70,6 @@ def chat():
     return jsonify({"response": response})
 
 
-if __name__ == '__main__':
+if __name__ == '_main_':
     create_vector_data()
     app.run(debug=True)
