@@ -17129,7 +17129,7 @@ body {
 /* Media Query for screens smaller than 480px (phones) */
 @media (max-width: 480px) {
     .chatbot-notification-container {
-        bottom: 200px; /* Further adjust bottom position */
+        bottom: 220px; /* Further adjust bottom position */
         right: 80px; /* Further adjust right position */
     }
 
