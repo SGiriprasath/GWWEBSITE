@@ -1,4 +1,5 @@
-from flask import Flask, requests, jsonify, render_template
+from flask import Flask, request, jsonify, render_template
+import requests
 from langchain.llms import GooglePalm
 from langchain.document_loaders.csv_loader import CSVLoader
 from langchain.embeddings import GooglePalmEmbeddings
