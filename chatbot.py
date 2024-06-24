@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, requests, jsonify, render_template
 from langchain.llms import GooglePalm
 from langchain.document_loaders.csv_loader import CSVLoader
 from langchain.embeddings import GooglePalmEmbeddings
@@ -58,7 +58,7 @@ def get_chain(query):
     # Call the chain with the query and return the result
     return chain(query)["result"]
     
-# Replace 'your_api_key' with your actual ipinfo.io API key
+
 API_KEY = 'f0bd38ac5bb3c8'
 
 def get_location(ip):
@@ -68,27 +68,21 @@ def get_location(ip):
 
 @app.route('/')
 def index():
-    def get_client_location():
-    # Get client's IP address
+    
     client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     if client_ip:
         client_ip = client_ip.split(',')[0]
     
-    # Get location data from IP address
+   
     location_data = get_location(client_ip)
+    
     city = location_data.get('city', 'Unknown')
     country = location_data.get('country', 'Unknown')
-
-    # Get current date and time
+    ip = location_data.get('ip', 'Unknown')
+    org = location_data.get('org', 'Unknown')
+    
     now = datetime.now()
     current_time = now.strftime("%Y-%m-%d %H:%M:%S")
-
-    return jsonify({
-        'ip': client_ip,
-        'city': city,
-        'country': country,
-        'date_time': current_time
-    })
     return render_template('index.html')
 
 
