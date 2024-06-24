@@ -4,4 +4,5 @@ google-generativeai
 faiss-cpu
 gunicorn==22.0.0
 datetime
+requests
 
