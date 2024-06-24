@@ -57,9 +57,29 @@ def get_chain(query):
     # Call the chain with the query and return the result
     return chain(query)["result"]
 
+loc_key = 'f0bd38ac5bb3c8'
 
+def get_location(ip):
+    url = f'http://ipinfo.io/{ip}?token={loc_key}'
+    response = requests.get(url)
+    return response.json()
+    
 @app.route('/')
 def index():
+    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if client_ip:
+        client_ip = client_ip.split(',')[0]
+    
+    location_data = get_location(client_ip)
+    
+    city = location_data.get('city', 'Unknown')
+    country = location_data.get('country', 'Unknown')
+    ip=location_data.get('ip', 'Unknown')
+    org=location_data.get('org', 'Unknown')
+    
+    now = datetime.now()
+    current_time = now.strftime("%Y-%m-%d %H:%M:%S")
+    loc_sheet(city,country,ip,current_time,org)
     return render_template('index.html')
 
 
