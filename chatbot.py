@@ -6,6 +6,7 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
 from langchain.vectorstores import FAISS
 import os
+from datetime import datetime
 
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
@@ -56,10 +57,38 @@ def get_chain(query):
 
     # Call the chain with the query and return the result
     return chain(query)["result"]
+    
+# Replace 'your_api_key' with your actual ipinfo.io API key
+API_KEY = 'f0bd38ac5bb3c8'
 
+def get_location(ip):
+    url = f'http://ipinfo.io/{ip}?token={API_KEY}'
+    response = requests.get(url)
+    return response.json()
 
 @app.route('/')
 def index():
+    def get_client_location():
+    # Get client's IP address
+    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if client_ip:
+        client_ip = client_ip.split(',')[0]
+    
+    # Get location data from IP address
+    location_data = get_location(client_ip)
+    city = location_data.get('city', 'Unknown')
+    country = location_data.get('country', 'Unknown')
+
+    # Get current date and time
+    now = datetime.now()
+    current_time = now.strftime("%Y-%m-%d %H:%M:%S")
+
+    return jsonify({
+        'ip': client_ip,
+        'city': city,
+        'country': country,
+        'date_time': current_time
+    })
     return render_template('index.html')
 
 
