@@ -9,7 +9,7 @@ from langchain.vectorstores import FAISS
 import os
 from datetime import datetime
 
-
+os.environ['GOOGLE_API_KEY'] = 'AIzaSyCThF2sxI4qjnwua2MxD9lFXSNywn2JYgk'
 app = Flask(__name__, template_folder='templates', static_folder='static')
 
 google = GooglePalm(google_api_key=os.getenv("GOOGLE_API_KEY"), temperature=0)
